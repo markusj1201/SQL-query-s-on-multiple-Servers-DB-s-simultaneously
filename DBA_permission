@@ -1,0 +1,10 @@
+-- Setting up User for Administrator
+USE [master]
+GO
+CREATE LOGIN [ILOVESQL\GrpDBA] FROM WINDOWS WITH DEFAULT_DATABASE=[msdb]
+GO
+USE [msdb]
+GO
+CREATE USER [ILOVESQL\GrpDBA] FOR LOGIN [ILOVESQL\GrpDBA]
+GO
+EXEC sp_addrolemember N'ServerGroupAdministratorRole', N'ILOVESQL\GrpDBA'
