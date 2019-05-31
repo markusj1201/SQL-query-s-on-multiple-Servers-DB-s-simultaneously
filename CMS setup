@@ -1,0 +1,73 @@
+Initial Setup:
+
+The setup is very straight forward. You just need to follow the How to: Create a Central Management Server and Server Group (SQL Server Management Studio) process which is outlined below.
+
+In SQL Server Management Studio, on the View menu, click Registered Servers. 
+In Registered Servers, expand Database Engine, right-click Central Management Servers, point to New, and then click Central Management Servers. 
+
+In the New Server Registration dialog box, register the instance of SQL Server that you want to become the Central Management Server. I used "DCKLEE\SQL2008" for this setup. 
+
+In Registered Servers, right-click the Central Management Server, point to New, and then click New Server Group. Type a group name and description, and then click OK. 
+
+In Registered Servers, right-click the Central Management Server group, and then click New Server Registration. 
+
+In the New Server Registration dialog box, register one or more instances of SQL Server that you want to become members of the server group. 
+
+After you have registered a server, the Central Management Server will be able to execute queries against all servers in the group at the same time.
+
+General Structure for Server Groups;
+(How to) - Setting up Folders and register servers:
+Start by creating a folder called "All" or "[Company Name] - All" and under that I create a folder for each SQL Server version. But you can set this up any way you want for your environment.
+When you try to register the server that is running "Central Management Server", you will get an error which says you cannot add a shared registered server with the same name as the Configuration Server. 
+
+If you get this error here is the work around. First, you need to find what port number the server is using. You can viewn in the "Static Port Assignments in SQL 2005" article to check what port is being using. 
+(If you are using Dynamic Ports, then you need to create an alias (see How to setup and use a SQL Server alias), but I wouldn't recommend using this because now you have to ask all the users to setup the same alias to use it. To make it easier you can deploy it automatically to all desktops by using a script, but again I wouldn't recommend using it unless you have to use dynamic ports.) 
+Once you find the port number, you need to put the port number along with the server name, now you should be able to register it.
+****************************************************************************************************************************************
+Security Setup:
+
+In order to use this, you will need to setup two different permissions for two different users/groups. One will have management rights and the other read rights.  There are new database roles in the msdb database, the two roles that will be used are:
+
+1. ServerGroupAdministratorRole - management rights. 
+
+2. ServerGroupReaderRole - read rights.
+
+For the general Reader, the login should use the 'ServerGroupReaderRole' role under msdb and here is the script that is used to create the login and give it permissions.
+######################################################################################################################################
+-- Setting up User for General Reader
+USE [master]
+GO
+CREATE LOGIN [ILOVESQL\GroupDeveloper] FROM WINDOWS 
+ WITH DEFAULT_DATABASE=[msdb]
+GO
+USE [msdb]
+GO
+CREATE USER [ILOVESQL\GroupDeveloper] FOR LOGIN [ILOVESQL\GrpDeveloper]
+GO
+EXEC sp_addrolemember N'ServerGroupReaderRole', N'ILOVESQL\GroupDeveloper'
+GO
+
+########################################################################################################################################
+****************************************************************************************************************************************
+For the DBAs, the login should be on 'ServerGroupAdministratorRole' role under msdb and here is the script that I used to create the login and give it permissions.
+########################################################################################################################################
+-- Setting up User for Administrator
+USE [master]
+GO
+CREATE LOGIN [ILOVESQL\GrpDBA] FROM WINDOWS WITH DEFAULT_DATABASE=[msdb]
+GO
+USE [msdb]
+GO
+CREATE USER [ILOVESQL\GrpDBA] FOR LOGIN [ILOVESQL\GrpDBA]
+GO
+EXEC sp_addrolemember N'ServerGroupAdministratorRole', N'ILOVESQL\GrpDBA'
+########################################################################################################################################
+Synapsis: 
+
+1. Setup a Central Management Server.
+
+2. Register your server.
+
+3. Grant permissions.
+
+4. Start executing queries across all of your SQL  Servers.
