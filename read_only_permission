@@ -1,0 +1,12 @@
+-- Setting up User for General Reader
+USE [master]
+GO
+CREATE LOGIN [ILOVESQL\GroupDeveloper] FROM WINDOWS 
+ WITH DEFAULT_DATABASE=[msdb]
+GO
+USE [msdb]
+GO
+CREATE USER [ILOVESQL\GroupDeveloper] FOR LOGIN [ILOVESQL\GrpDeveloper]
+GO
+EXEC sp_addrolemember N'ServerGroupReaderRole', N'ILOVESQL\GroupDeveloper'
+GO
